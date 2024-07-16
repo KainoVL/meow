@@ -9,7 +9,7 @@ local players = game.Players
 local whitelist = getgenv().whitelist or {}
 
 local grassHierarchy = {
-    "Quantum", "Negative", "Celestial", "Moon", "Solar", "Sun", "Midas", "Rainbow",
+    "Unobtainium", "Quantum", "Negative", "Celestial", "Moon", "Solar", "Sun", "Midas", "Rainbow",
     "Plasma", "Diamond", "Emerald", "Ruby", "Sapphire", "Amethyst", "Gold", "Silver", "Bronze", "Green"
 }
 
