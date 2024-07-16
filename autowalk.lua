@@ -7,9 +7,8 @@ end)
 local game = game
 local players = game.Players
 local whitelist = getgenv().whitelist or {}
-
 local grassHierarchy = {
-    "Unobtainium", "Quantum", "Negative", "Celestial", "Moon", "Solar", "Sun", "Midas", "Rainbow",
+    "Unobtainium", "Quantum", "BlackHole", "Negative", "Celestial", "Moon", "Solar", "Sun", "Midas", "Rainbow",
     "Plasma", "Diamond", "Emerald", "Ruby", "Sapphire", "Amethyst", "Gold", "Silver", "Bronze", "Green"
 }
 
@@ -50,12 +49,22 @@ local function findBestGrass()
     return {}
 end
 
-local lastPositions = {}
+local function getPartPosition(part)
+    if part:IsA("BasePart") then
+        return part.Position
+    else
+        local subPart = part:FindFirstChild(part.Name)
+        if subPart and subPart:IsA("BasePart") then
+            return subPart.Position
+        end
+    end
+    return nil
+end
 
+local lastPositions = {}
 local function moveWhitelistedPlayersToGrass()
     local bestGrassParts = findBestGrass()
     if #bestGrassParts == 0 then return end
-
     for _, player in ipairs(players:GetPlayers()) do
         if isPlayerWhitelisted(player) then
             local character = player.Character
@@ -72,10 +81,13 @@ local function moveWhitelistedPlayersToGrass()
                         repeat
                             randomGrass = bestGrassParts[math.random(1, #bestGrassParts)]
                             attempts = attempts + 1
-                        until (randomGrass.Position - currentPosition).Magnitude > 10 or attempts > 10
+                        until (attempts > 10) or (randomGrass and getPartPosition(randomGrass) and (getPartPosition(randomGrass) - currentPosition).Magnitude > 10)
                         
-                        humanoid:MoveTo(randomGrass.Position + Vector3.new(0, 3, 0))
-                        lastPositions[player.UserId] = randomGrass.Position
+                        local grassPosition = getPartPosition(randomGrass)
+                        if grassPosition then
+                            humanoid:MoveTo(grassPosition + Vector3.new(0, 3, 0))
+                            lastPositions[player.UserId] = grassPosition
+                        end
                     end
                 end
             end
@@ -101,8 +113,6 @@ while true do
     else
         setWalkSpeed(whitelistedSpeed)
     end
-
     moveWhitelistedPlayersToGrass()
-
     wait(1)
 end
