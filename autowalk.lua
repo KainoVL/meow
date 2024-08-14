@@ -104,7 +104,7 @@ local function areNonWhitelistedPlayersPresent()
     return false
 end
 
-local defaultSpeed = 20
+local defaultSpeed = 30
 local whitelistedSpeed = 100
 
 while true do
