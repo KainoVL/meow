@@ -3,7 +3,6 @@ this is just for my own personal stuff
 
 
 ```
-getgenv().whitelist = {USERID} --this is for grass touching simulator when there are only whitelisted players in your server it will set your walkspeed to 100 and if there are people who aren't whitelisted in your server it will set it to 20. Put their roblox user id
 getgenv().AuthKey = "KEY" --for pet simulator 99 get your key from https://hugegames.io/
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Rivkaaaazz/meow/main/meow.lua",true))()
