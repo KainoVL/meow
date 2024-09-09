@@ -3,7 +3,7 @@ this is just for my own personal stuff
 
 
 ```
-getgenv().AuthKey = "KEY" --for pet simulator 99 get your key from https://hugegames.io/
+--getgenv().AuthKey = "KEY" --for pet simulator 99 get your key from https://hugegames.io/
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Rivkaaaazz/meow/main/meow.lua",true))()
 ```
