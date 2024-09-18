@@ -193,10 +193,12 @@ local function updateWhitelistDisplay()
                 if tonumber(newValue) then
                     whitelistedIds[i] = tonumber(newValue)
                 else
-                    local player = Players:FindFirstChild(newValue)
-                    if player then
-                        whitelistedIds[i] = player.UserId
-                        entryText.Text = tostring(player.UserId)
+                    local success, result = pcall(function()
+                        return Players:GetUserIdFromNameAsync(newValue)
+                    end)
+                    if success then
+                        whitelistedIds[i] = result
+                        entryText.Text = tostring(result)
                     else
                         entryText.Text = tostring(whitelistedIds[i])
                     end
