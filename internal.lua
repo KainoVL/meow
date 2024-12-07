@@ -25,11 +25,15 @@ local function createGlow(parent, color)
     glow.Image = "rbxassetid://5028857472"
     glow.ImageColor3 = color
     glow.ImageTransparency = 0.8
-    glow.Size = UDim2.new(1, 5, 1, 5)
+    glow.Size = UDim2.new(1, 10, 1, 10)
     glow.Position = UDim2.new(0.5, 0, 0.5, 0)
     glow.AnchorPoint = Vector2.new(0.5, 0.5)
     glow.ZIndex = parent.ZIndex - 1
     glow.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = glow
 end
 
 local mainFrame = Instance.new("Frame")
@@ -40,7 +44,7 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 createCorner(mainFrame, 10)
-createGlow(mainFrame, Color3.fromRGB(246, 54, 138))
+createGlow(mainFrame, Color3.fromRGB(111, 167, 223))
 
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBar"
@@ -56,7 +60,7 @@ titleLabel.Size = UDim2.new(0, 100, 1, 0)
 titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "Kaino"
+titleLabel.Text = "Hyperion"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 18
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -65,11 +69,11 @@ titleLabel.Parent = topBar
 local versionLabel = Instance.new("TextLabel")
 versionLabel.Name = "VersionLabel"
 versionLabel.Size = UDim2.new(0, 100, 1, 0)
-versionLabel.Position = UDim2.new(0, 60, 0, 0)  
+versionLabel.Position = UDim2.new(0, 90, 0, 0)  
 versionLabel.BackgroundTransparency = 1
 versionLabel.Font = Enum.Font.Gotham
-versionLabel.Text = "Internal UI"
-versionLabel.TextColor3 = Color3.fromRGB(246, 54, 138)
+versionLabel.Text = "v2"
+versionLabel.TextColor3 = Color3.fromRGB(111, 167, 223)
 versionLabel.TextSize = 14
 versionLabel.TextXAlignment = Enum.TextXAlignment.Left
 versionLabel.Parent = topBar
@@ -178,7 +182,7 @@ codeBox.Name = "CodeBox"
 codeBox.Size = UDim2.new(1, -6, 1, 0)
 codeBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 codeBox.Font = Enum.Font.Code
-codeBox.Text = "--buy kaino"
+codeBox.Text = "--buy hyperion"
 codeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 codeBox.TextSize = 14
 codeBox.TextXAlignment = Enum.TextXAlignment.Left
@@ -270,7 +274,7 @@ local function switchToTab(tab)
     end
     currentTab = tab
     codeBox.Text = tab.content
-    tab.button.BackgroundColor3 = Color3.fromRGB(246, 54, 138)
+    tab.button.BackgroundColor3 = Color3.fromRGB(111, 167, 223)
 end
 
 local function updateTabPositions()
@@ -302,7 +306,7 @@ end
 local function createTab(name)
     local tab = {}
     tab.name = name
-    tab.content = "--buy kaino"
+    tab.content = "--buy hyperion"
 
     local tabButton = Instance.new("TextButton")
     tabButton.Name = name .. "Tab"
