@@ -237,14 +237,14 @@ function HyperionUI:CreateButton(tab, name, description, callback)
     createCorner(button, 5)
     
     local buttonCount = #tab.elements
-    button.Position = UDim2.new(0, 0, 0, buttonCount * 50)
+    button.Position = UDim2.new(0, 0, 0, buttonCount * 70)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (buttonCount + 1) * 50)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (buttonCount + 1) * 70)
     
     local descriptionLabel = Instance.new("TextLabel")
     descriptionLabel.Name = "Description"
     descriptionLabel.Size = UDim2.new(1, 0, 0, 20)
-    descriptionLabel.Position = UDim2.new(0, 0, 1, 0)
+    descriptionLabel.Position = UDim2.new(0, 0, 1, 5)
     descriptionLabel.BackgroundTransparency = 1
     descriptionLabel.Text = description
     descriptionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
