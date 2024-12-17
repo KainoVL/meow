@@ -263,6 +263,10 @@ function HyperionUI:NewTab(name)
                 return function(...)
                     return self:CreateSlider(tab, ...)
                 end
+            elseif key == "Dropdown" then
+                return function(...)
+                    return self:CreateDropdown(tab, ...)
+                end
             end
         end
     })
@@ -509,6 +513,125 @@ function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
     table.insert(tab.elements, textboxFrame)
     
     return textbox
+end
+
+function HyperionUI:CreateDropdown(tab, name, description, options, default, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Name = name .. "DropdownFrame"
+    dropdownFrame.Size = UDim2.new(1, -10, 0, 40)
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    dropdownFrame.Parent = tab.contentFrame
+    createCorner(dropdownFrame, 5)
+    
+    local elementCount = #tab.elements
+    dropdownFrame.Position = UDim2.new(0, 0, 0, elementCount * 45)
+    
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 45)
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(0.5, -20, 1, 0)
+    nameLabel.Position = UDim2.new(0, 10, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextSize = 14
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.Parent = dropdownFrame
+    
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Name = "DropdownButton"
+    dropdownButton.Size = UDim2.new(0.4, 0, 0, 25)
+    dropdownButton.Position = UDim2.new(0.5, -20, 0.5, -12.5)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    dropdownButton.Text = default or "Select..."
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.Font = Enum.Font.Gotham
+    dropdownButton.TextSize = 14
+    dropdownButton.Parent = dropdownFrame
+    createCorner(dropdownButton, 5)
+    
+    local arrow = Instance.new("TextLabel")
+    arrow.Name = "Arrow"
+    arrow.Size = UDim2.new(0, 20, 0, 20)
+    arrow.Position = UDim2.new(1, -25, 0.5, -10)
+    arrow.BackgroundTransparency = 1
+    arrow.Text = "▼"
+    arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    arrow.Font = Enum.Font.Gotham
+    arrow.TextSize = 14
+    arrow.Parent = dropdownButton
+    
+    local dropdownList = Instance.new("Frame")
+    dropdownList.Name = "DropdownList"
+    dropdownList.Size = UDim2.new(1, 0, 0, #options * 30)
+    dropdownList.Position = UDim2.new(0, 0, 1, 5)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownList.Visible = false
+    dropdownList.ZIndex = 10
+    dropdownList.Parent = dropdownButton
+    createCorner(dropdownList, 5)
+    
+    for i, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Name = option .. "Option"
+        optionButton.Size = UDim2.new(1, 0, 0, 30)
+        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * 30)
+        optionButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        optionButton.BackgroundTransparency = 1
+        optionButton.Text = option
+        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optionButton.Font = Enum.Font.Gotham
+        optionButton.TextSize = 14
+        optionButton.ZIndex = 11
+        optionButton.Parent = dropdownList
+        
+        optionButton.MouseEnter:Connect(function()
+            optionButton.BackgroundTransparency = 0.8
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            optionButton.BackgroundTransparency = 1
+        end)
+        
+        optionButton.MouseButton1Click:Connect(function()
+            dropdownButton.Text = option
+            dropdownList.Visible = false
+            arrow.Rotation = 0
+            callback(option)
+        end)
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        dropdownList.Visible = not dropdownList.Visible
+        arrow.Rotation = dropdownList.Visible and 180 or 0
+    end)
+    
+    game:GetService("UserInputService").InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+            local dropdownPos = dropdownButton.AbsolutePosition
+            local dropdownSize = dropdownButton.AbsoluteSize
+            local listSize = dropdownList.AbsoluteSize
+            
+            if dropdownList.Visible then
+                local inDropdown = mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
+                                 mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y + listSize.Y
+                
+                if not inDropdown then
+                    dropdownList.Visible = false
+                    arrow.Rotation = 0
+                end
+            end
+        end
+    end)
+    
+    createHelpButton(dropdownFrame, description)
+    
+    table.insert(tab.elements, dropdownFrame)
+    
+    return dropdownFrame
 end
 
 function HyperionUI:Toggle()
