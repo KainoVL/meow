@@ -1,4 +1,4 @@
-print("You are on version 1.0.0")
+print("You are on version 1.0.1")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -566,7 +566,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     
     local dropdownList = Instance.new("Frame")
     dropdownList.Name = "DropdownList"
-    dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30, 200)) 
+    dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30 + 35, 235)) 
     dropdownList.Position = UDim2.new(0, 0, 1, 5)
     dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     dropdownList.Visible = false
@@ -574,22 +574,38 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     dropdownList.Parent = dropdownButton
     createCorner(dropdownList, 5)
     
+    local searchBox = Instance.new("TextBox")
+    searchBox.Name = "SearchBox"
+    searchBox.Size = UDim2.new(1, -10, 0, 25)
+    searchBox.Position = UDim2.new(0, 5, 0, 5)
+    searchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    searchBox.Text = ""
+    searchBox.PlaceholderText = "Search..."
+    searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    searchBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
+    searchBox.Font = Enum.Font.Gotham
+    searchBox.TextSize = 14
+    searchBox.ZIndex = 11
+    searchBox.Parent = dropdownList
+    createCorner(searchBox, 4)
+    
     local scrollFrame = Instance.new("ScrollingFrame")
     scrollFrame.Name = "ScrollFrame"
-    scrollFrame.Size = UDim2.new(1, -4, 1, -4)
-    scrollFrame.Position = UDim2.new(0, 2, 0, 2)
+    scrollFrame.Size = UDim2.new(1, -4, 1, -35)
+    scrollFrame.Position = UDim2.new(0, 2, 0, 35) 
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.ScrollBarThickness = 4
-    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(111, 167, 223) 
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(111, 167, 223)
     scrollFrame.ZIndex = 10
     scrollFrame.Parent = dropdownList
+
+    local optionButtons = {}
     
-    for i, option in ipairs(options) do
+    local function createOptionButton(option, index)
         local optionButton = Instance.new("TextButton")
         optionButton.Name = option .. "Option"
         optionButton.Size = UDim2.new(1, 0, 0, 30)
-        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * 30)
+        optionButton.Position = UDim2.new(0, 0, 0, (index-1) * 30)
         optionButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         optionButton.BackgroundTransparency = 1
         optionButton.Text = option
@@ -613,11 +629,47 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
             arrow.Rotation = 0
             callback(option)
         end)
+        
+        return optionButton
     end
+    
+    local function filterOptions(searchText)
+        searchText = searchText:lower()
+        local visibleCount = 0
+        
+        for i, option in ipairs(options) do
+            local optionButton = optionButtons[i]
+            if option:lower():find(searchText, 1, true) then
+                optionButton.Visible = true
+                optionButton.Position = UDim2.new(0, 0, 0, visibleCount * 30)
+                visibleCount = visibleCount + 1
+            else
+                optionButton.Visible = false
+            end
+        end
+        
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, visibleCount * 30)
+    end
+    
+    for i, option in ipairs(options) do
+        optionButtons[i] = createOptionButton(option, i)
+    end
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
+    
+    searchBox.Changed:Connect(function(prop)
+        if prop == "Text" then
+            filterOptions(searchBox.Text)
+        end
+    end)
     
     dropdownButton.MouseButton1Click:Connect(function()
         dropdownList.Visible = not dropdownList.Visible
         arrow.Rotation = dropdownList.Visible and 180 or 0
+        if dropdownList.Visible then
+            searchBox.Text = ""
+            filterOptions("")
+            searchBox:CaptureFocus()
+        end
     end)
     
     game:GetService("UserInputService").InputBegan:Connect(function(input)
@@ -629,8 +681,8 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
             
             if dropdownList.Visible then
                 local listAbsPos = dropdownList.AbsolutePosition
-            local inDropdown = mousePos.X >= listAbsPos.X and mousePos.X <= listAbsPos.X + dropdownList.AbsoluteSize.X and
-                              mousePos.Y >= listAbsPos.Y and mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
+                local inDropdown = mousePos.X >= listAbsPos.X and mousePos.X <= listAbsPos.X + dropdownList.AbsoluteSize.X and
+                                mousePos.Y >= listAbsPos.Y and mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
                 
                 if not inDropdown then
                     dropdownList.Visible = false
