@@ -565,13 +565,24 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     
     local dropdownList = Instance.new("Frame")
     dropdownList.Name = "DropdownList"
-    dropdownList.Size = UDim2.new(1, 0, 0, #options * 30)
+    dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30, 200)) 
     dropdownList.Position = UDim2.new(0, 0, 1, 5)
     dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     dropdownList.Visible = false
     dropdownList.ZIndex = 10
     dropdownList.Parent = dropdownButton
     createCorner(dropdownList, 5)
+    
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Name = "ScrollFrame"
+    scrollFrame.Size = UDim2.new(1, -4, 1, -4)
+    scrollFrame.Position = UDim2.new(0, 2, 0, 2)
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = 4
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(111, 167, 223) 
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
+    scrollFrame.ZIndex = 10
+    scrollFrame.Parent = dropdownList
     
     for i, option in ipairs(options) do
         local optionButton = Instance.new("TextButton")
@@ -585,7 +596,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         optionButton.Font = Enum.Font.Gotham
         optionButton.TextSize = 14
         optionButton.ZIndex = 11
-        optionButton.Parent = dropdownList
+        optionButton.Parent = scrollFrame
         
         optionButton.MouseEnter:Connect(function()
             optionButton.BackgroundTransparency = 0.8
@@ -616,8 +627,9 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
             local listSize = dropdownList.AbsoluteSize
             
             if dropdownList.Visible then
-                local inDropdown = mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
-                                 mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y + listSize.Y
+                local listAbsPos = dropdownList.AbsolutePosition
+            local inDropdown = mousePos.X >= listAbsPos.X and mousePos.X <= listAbsPos.X + dropdownList.AbsoluteSize.X and
+                              mousePos.Y >= listAbsPos.Y and mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
                 
                 if not inDropdown then
                     dropdownList.Visible = false
