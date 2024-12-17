@@ -1,3 +1,4 @@
+print("You are on version 1.0.0")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
