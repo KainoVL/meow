@@ -5,7 +5,7 @@ end
 local placeId = game.PlaceId
 
 local games = {
-    [12629753855] = "loadstring(game:HttpGet('https://raw.githubusercontent.com/KainoVL/meow/main/meowgui.lua', true))()",
+    [12629753855] = "loadstring(game:HttpGet('https://raw.githubusercontent.com/KainoVL/meow/refs/heads/main/nico.lua', true))()",
     [8387888847] = "loadstring(game:HttpGet('https://raw.githubusercontent.com/KainoVL/meow/main/autowalk.lua', true))()",
     [16498369169] = [[
         getgenv().LoadSettings = {
