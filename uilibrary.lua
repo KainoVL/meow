@@ -25,6 +25,62 @@ local function createGlow(parent, color)
     return glow
 end
 
+local function createTooltip(description)
+    local tooltip = Instance.new("Frame")
+    tooltip.Name = "Tooltip"
+    tooltip.Size = UDim2.new(0, 200, 0, 40)
+    tooltip.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tooltip.BackgroundTransparency = 0
+    tooltip.Visible = false
+    tooltip.ZIndex = 10
+    createCorner(tooltip, 5)
+
+    local tooltipText = Instance.new("TextLabel")
+    tooltipText.Name = "TooltipText"
+    tooltipText.Size = UDim2.new(1, -10, 1, -10)
+    tooltipText.Position = UDim2.new(0, 5, 0, 5)
+    tooltipText.BackgroundTransparency = 1
+    tooltipText.Text = description
+    tooltipText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tooltipText.TextWrapped = true
+    tooltipText.Font = Enum.Font.Gotham
+    tooltipText.TextSize = 12
+    tooltipText.ZIndex = 11
+    tooltipText.Parent = tooltip
+
+    return tooltip
+end
+
+local function createHelpButton(parent, description)
+    if not description then return end
+    
+    local helpButton = Instance.new("TextButton")
+    helpButton.Name = "HelpButton"
+    helpButton.Size = UDim2.new(0, 20, 0, 20)
+    helpButton.Position = UDim2.new(1, -30, 0.5, -10)
+    helpButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    helpButton.Text = "?"
+    helpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    helpButton.Font = Enum.Font.GothamBold
+    helpButton.TextSize = 14
+    helpButton.Parent = parent
+    createCorner(helpButton, 4)
+
+    local tooltip = createTooltip(description)
+    tooltip.Parent = helpButton
+
+    helpButton.MouseButton1Click:Connect(function()
+        tooltip.Position = UDim2.new(0, -210, 0, 0)
+        tooltip.Visible = not tooltip.Visible
+    end)
+
+    helpButton.MouseLeave:Connect(function()
+        tooltip.Visible = false
+    end)
+
+    return helpButton
+end
+
 function HyperionUI.new(name)
     local self = setmetatable({}, HyperionUI)
     
@@ -237,22 +293,18 @@ function HyperionUI:CreateButton(tab, name, description, callback)
     createCorner(button, 5)
     
     local buttonCount = #tab.elements
-    button.Position = UDim2.new(0, 0, 0, buttonCount * 70)
+    button.Position = UDim2.new(0, 0, 0, buttonCount * 45)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (buttonCount + 1) * 70)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (buttonCount + 1) * 45)
     
-    local descriptionLabel = Instance.new("TextLabel")
-    descriptionLabel.Name = "Description"
-    descriptionLabel.Size = UDim2.new(1, 0, 0, 20)
-    descriptionLabel.Position = UDim2.new(0, 0, 1, 5)
-    descriptionLabel.BackgroundTransparency = 1
-    descriptionLabel.Text = description
-    descriptionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    descriptionLabel.Font = Enum.Font.Gotham
-    descriptionLabel.TextSize = 12
-    descriptionLabel.Parent = button
+    createHelpButton(button, description)
     
-    button.MouseButton1Click:Connect(callback)
+    button.MouseButton1Click:Connect(function()
+        if button:FindFirstChild("HelpButton") and button.HelpButton:FindFirstChild("Tooltip") then
+            button.HelpButton.Tooltip.Visible = false
+        end
+        callback()
+    end)
     
     table.insert(tab.elements, button)
     
@@ -268,9 +320,9 @@ function HyperionUI:CreateToggle(tab, name, description, defaultState, callback)
     createCorner(toggleFrame, 5)
     
     local toggleCount = #tab.elements
-    toggleFrame.Position = UDim2.new(0, 0, 0, toggleCount * 50)
+    toggleFrame.Position = UDim2.new(0, 0, 0, toggleCount * 45)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (toggleCount + 1) * 50)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (toggleCount + 1) * 45)
     
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "NameLabel"
@@ -284,31 +336,21 @@ function HyperionUI:CreateToggle(tab, name, description, defaultState, callback)
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
     nameLabel.Parent = toggleFrame
     
-    local descriptionLabel = Instance.new("TextLabel")
-    descriptionLabel.Name = "DescriptionLabel"
-    descriptionLabel.Size = UDim2.new(1, 0, 0, 20)
-    descriptionLabel.Position = UDim2.new(0, 10, 1, 0)
-    descriptionLabel.BackgroundTransparency = 1
-    descriptionLabel.Text = description
-    descriptionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    descriptionLabel.Font = Enum.Font.Gotham
-    descriptionLabel.TextSize = 12
-    descriptionLabel.Parent = toggleFrame
-    
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
     toggleButton.Size = UDim2.new(0, 40, 0, 20)
-    toggleButton.Position = UDim2.new(1, -50, 0.5, -10)
+    toggleButton.Position = UDim2.new(1, -80, 0.5, -10)
     toggleButton.BackgroundColor3 = defaultState and Color3.fromRGB(111, 167, 223) or Color3.fromRGB(60, 60, 60)
     toggleButton.Parent = toggleFrame
     createCorner(toggleButton, 10)
+    
+    createHelpButton(toggleFrame, description)
     
     local isToggled = defaultState
     
     toggleButton.MouseButton1Click:Connect(function()
         isToggled = not isToggled
         toggleButton.BackgroundColor3 = isToggled and Color3.fromRGB(111, 167, 223) or Color3.fromRGB(60, 60, 60)
-        
         callback(isToggled)
     end)
     
@@ -320,20 +362,20 @@ end
 function HyperionUI:CreateSlider(tab, name, description, min, max, default, callback)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Name = name .. "SliderFrame"
-    sliderFrame.Size = UDim2.new(1, -10, 0, 60)
+    sliderFrame.Size = UDim2.new(1, -10, 0, 40)
     sliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     sliderFrame.Parent = tab.contentFrame
     createCorner(sliderFrame, 5)
     
     local elementCount = #tab.elements
-    sliderFrame.Position = UDim2.new(0, 0, 0, elementCount * 70)
+    sliderFrame.Position = UDim2.new(0, 0, 0, elementCount * 45)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 70)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 45)
     
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "NameLabel"
-    nameLabel.Size = UDim2.new(1, -20, 0, 20)
-    nameLabel.Position = UDim2.new(0, 10, 0, 5)
+    nameLabel.Size = UDim2.new(0.5, -20, 1, 0)
+    nameLabel.Position = UDim2.new(0, 10, 0, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = name
     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -345,7 +387,7 @@ function HyperionUI:CreateSlider(tab, name, description, min, max, default, call
     local valueLabel = Instance.new("TextLabel")
     valueLabel.Name = "ValueLabel"
     valueLabel.Size = UDim2.new(0, 50, 0, 20)
-    valueLabel.Position = UDim2.new(1, -60, 0, 5)
+    valueLabel.Position = UDim2.new(1, -90, 0.5, -10)
     valueLabel.BackgroundTransparency = 1
     valueLabel.Text = tostring(default)
     valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -355,8 +397,8 @@ function HyperionUI:CreateSlider(tab, name, description, min, max, default, call
     
     local sliderBg = Instance.new("Frame")
     sliderBg.Name = "SliderBackground"
-    sliderBg.Size = UDim2.new(1, -20, 0, 6)
-    sliderBg.Position = UDim2.new(0, 10, 0, 35)
+    sliderBg.Size = UDim2.new(0.4, 0, 0, 6)
+    sliderBg.Position = UDim2.new(0.5, -20, 0.5, -3)
     sliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     sliderBg.Parent = sliderFrame
     createCorner(sliderBg, 3)
@@ -376,17 +418,7 @@ function HyperionUI:CreateSlider(tab, name, description, min, max, default, call
     sliderKnob.Parent = sliderBg
     createCorner(sliderKnob, 8)
     
-    local descriptionLabel = Instance.new("TextLabel")
-    descriptionLabel.Name = "Description"
-    descriptionLabel.Size = UDim2.new(1, -20, 0, 20)
-    descriptionLabel.Position = UDim2.new(0, 10, 1, 0)
-    descriptionLabel.BackgroundTransparency = 1
-    descriptionLabel.Text = description
-    descriptionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    descriptionLabel.Font = Enum.Font.Gotham
-    descriptionLabel.TextSize = 12
-    descriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descriptionLabel.Parent = sliderFrame
+    createHelpButton(sliderFrame, description)
     
     local UserInputService = game:GetService("UserInputService")
     local dragging = false
@@ -429,20 +461,20 @@ end
 function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
     local textboxFrame = Instance.new("Frame")
     textboxFrame.Name = name .. "TextboxFrame"
-    textboxFrame.Size = UDim2.new(1, -10, 0, 60)
+    textboxFrame.Size = UDim2.new(1, -10, 0, 40)
     textboxFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     textboxFrame.Parent = tab.contentFrame
     createCorner(textboxFrame, 5)
     
     local elementCount = #tab.elements
-    textboxFrame.Position = UDim2.new(0, 0, 0, elementCount * 70)
+    textboxFrame.Position = UDim2.new(0, 0, 0, elementCount * 45)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 70)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 45)
     
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "NameLabel"
-    nameLabel.Size = UDim2.new(1, -20, 0, 20)
-    nameLabel.Position = UDim2.new(0, 10, 0, 5)
+    nameLabel.Size = UDim2.new(0.3, 0, 1, 0)
+    nameLabel.Position = UDim2.new(0, 10, 0, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = name
     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -453,8 +485,8 @@ function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
     
     local textbox = Instance.new("TextBox")
     textbox.Name = "Input"
-    textbox.Size = UDim2.new(1, -20, 0, 25)
-    textbox.Position = UDim2.new(0, 10, 0, 25)
+    textbox.Size = UDim2.new(0.5, 0, 0, 25)
+    textbox.Position = UDim2.new(0.35, 0, 0.5, -12.5)
     textbox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     textbox.Text = ""
     textbox.PlaceholderText = placeholder
@@ -465,17 +497,7 @@ function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
     textbox.Parent = textboxFrame
     createCorner(textbox, 5)
     
-    local descriptionLabel = Instance.new("TextLabel")
-    descriptionLabel.Name = "Description"
-    descriptionLabel.Size = UDim2.new(1, -20, 0, 20)
-    descriptionLabel.Position = UDim2.new(0, 10, 1, -15)
-    descriptionLabel.BackgroundTransparency = 1
-    descriptionLabel.Text = description
-    descriptionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    descriptionLabel.Font = Enum.Font.Gotham
-    descriptionLabel.TextSize = 12
-    descriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descriptionLabel.Parent = textboxFrame
+    createHelpButton(textboxFrame, description)
     
     textbox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
