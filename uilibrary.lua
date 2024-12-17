@@ -341,6 +341,7 @@ function HyperionUI:CreateToggle(tab, name, description, defaultState, callback)
     toggleButton.Size = UDim2.new(0, 40, 0, 20)
     toggleButton.Position = UDim2.new(1, -80, 0.5, -10)
     toggleButton.BackgroundColor3 = defaultState and Color3.fromRGB(111, 167, 223) or Color3.fromRGB(60, 60, 60)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Parent = toggleFrame
     createCorner(toggleButton, 10)
     
