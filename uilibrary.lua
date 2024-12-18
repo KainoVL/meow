@@ -1,4 +1,4 @@
-print("You are on version 1.0.1")
+print("You are on version 1.0.2")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -236,6 +236,7 @@ function HyperionUI:NewTab(name)
     contentFrame.BackgroundTransparency = 1
     contentFrame.ScrollBarThickness = 6
     contentFrame.Parent = self.mainFrame
+    contentFrame.Visible = false  
     
     tab.button = tabButton
     tab.contentFrame = contentFrame
@@ -247,7 +248,9 @@ function HyperionUI:NewTab(name)
     end)
     
     if #self.tabs == 1 then
-        self:SwitchTab(tab)
+        task.defer(function()  
+            self:SwitchTab(tab)
+        end)
     end
     
     return setmetatable(tab, {
