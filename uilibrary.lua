@@ -1,4 +1,4 @@
-print("You are on version 1.0.4")
+print("You are on version 1.0.5")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -737,7 +737,14 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
                                  mousePos.Y >= listAbsPos.Y and 
                                  mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
                 
-                if not inDropdown and not dropdownButton.AbsoluteRect:IsPointInRect(mousePos) then
+                local buttonAbsPos = dropdownButton.AbsolutePosition
+                local buttonAbsSize = dropdownButton.AbsoluteSize
+                local inButton = mousePos.X >= buttonAbsPos.X and 
+                               mousePos.X <= buttonAbsPos.X + buttonAbsSize.X and
+                               mousePos.Y >= buttonAbsPos.Y and 
+                               mousePos.Y <= buttonAbsPos.Y + buttonAbsSize.Y
+
+                if not inDropdown and not inButton then
                     dropdownList.Visible = false
                     arrow.Rotation = 0
                 end
