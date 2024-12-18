@@ -1,4 +1,4 @@
-print("You are on version 1.0.2")
+print("You are on version 1.0.3")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -235,9 +235,22 @@ function HyperionUI:NewTab(name)
     contentFrame.Position = UDim2.new(0, 10, 0, 80)
     contentFrame.BackgroundTransparency = 1
     contentFrame.ScrollBarThickness = 6
+    contentFrame.ScrollBarImageColor3 = Color3.fromRGB(111, 167, 223)
+    contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  
     contentFrame.Parent = self.mainFrame
-    contentFrame.Visible = false  
+    contentFrame.Visible = false
+    contentFrame.ZIndex = 1  
     
+    local function updateCanvasSize()
+        local maxY = 0
+        for _, element in ipairs(tab.elements) do
+            local elemY = element.Position.Y.Offset + element.AbsoluteSize.Y
+            maxY = math.max(maxY, elemY)
+        end
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, maxY + 20)  
+    end
+    
+    tab.updateCanvasSize = updateCanvasSize
     tab.button = tabButton
     tab.contentFrame = contentFrame
     
@@ -248,7 +261,7 @@ function HyperionUI:NewTab(name)
     end)
     
     if #self.tabs == 1 then
-        task.defer(function()  
+        task.defer(function()
             self:SwitchTab(tab)
         end)
     end
@@ -525,12 +538,13 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     dropdownFrame.Size = UDim2.new(1, -10, 0, 40)
     dropdownFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     dropdownFrame.Parent = tab.contentFrame
+    dropdownFrame.ZIndex = 2  
     createCorner(dropdownFrame, 5)
     
     local elementCount = #tab.elements
     dropdownFrame.Position = UDim2.new(0, 0, 0, elementCount * 45)
     
-    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 45)
+    tab.contentFrame.CanvasSize = UDim2.new(0, 0, 0, (elementCount + 1) * 45 + 20)
     
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "NameLabel"
@@ -542,6 +556,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     nameLabel.Font = Enum.Font.Gotham
     nameLabel.TextSize = 14
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.ZIndex = 2
     nameLabel.Parent = dropdownFrame
     
     local dropdownButton = Instance.new("TextButton")
@@ -553,6 +568,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     dropdownButton.Font = Enum.Font.Gotham
     dropdownButton.TextSize = 14
+    dropdownButton.ZIndex = 2
     dropdownButton.Parent = dropdownFrame
     createCorner(dropdownButton, 5)
     
@@ -565,15 +581,16 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
     arrow.Font = Enum.Font.Gotham
     arrow.TextSize = 14
+    arrow.ZIndex = 3
     arrow.Parent = dropdownButton
     
     local dropdownList = Instance.new("Frame")
     dropdownList.Name = "DropdownList"
-    dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30 + 35, 235)) 
+    dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30 + 35, 235))
     dropdownList.Position = UDim2.new(0, 0, 1, 5)
     dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     dropdownList.Visible = false
-    dropdownList.ZIndex = 10
+    dropdownList.ZIndex = 20  
     dropdownList.Parent = dropdownButton
     createCorner(dropdownList, 5)
     
@@ -588,20 +605,20 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     searchBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
     searchBox.Font = Enum.Font.Gotham
     searchBox.TextSize = 14
-    searchBox.ZIndex = 11
+    searchBox.ZIndex = 21
     searchBox.Parent = dropdownList
     createCorner(searchBox, 4)
     
     local scrollFrame = Instance.new("ScrollingFrame")
     scrollFrame.Name = "ScrollFrame"
     scrollFrame.Size = UDim2.new(1, -4, 1, -35)
-    scrollFrame.Position = UDim2.new(0, 2, 0, 35) 
+    scrollFrame.Position = UDim2.new(0, 2, 0, 35)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.ScrollBarThickness = 4
     scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(111, 167, 223)
-    scrollFrame.ZIndex = 10
+    scrollFrame.ZIndex = 21
     scrollFrame.Parent = dropdownList
-
+    
     local optionButtons = {}
     
     local function createOptionButton(option, index)
@@ -615,7 +632,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         optionButton.Font = Enum.Font.Gotham
         optionButton.TextSize = 14
-        optionButton.ZIndex = 11
+        optionButton.ZIndex = 22  
         optionButton.Parent = scrollFrame
         
         optionButton.MouseEnter:Connect(function()
@@ -684,8 +701,10 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
             
             if dropdownList.Visible then
                 local listAbsPos = dropdownList.AbsolutePosition
-                local inDropdown = mousePos.X >= listAbsPos.X and mousePos.X <= listAbsPos.X + dropdownList.AbsoluteSize.X and
-                                mousePos.Y >= listAbsPos.Y and mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
+                local inDropdown = mousePos.X >= listAbsPos.X and 
+                                 mousePos.X <= listAbsPos.X + dropdownList.AbsoluteSize.X and
+                                 mousePos.Y >= listAbsPos.Y and 
+                                 mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
                 
                 if not inDropdown then
                     dropdownList.Visible = false
@@ -698,6 +717,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     createHelpButton(dropdownFrame, description)
     
     table.insert(tab.elements, dropdownFrame)
+    tab.updateCanvasSize()  
     
     return dropdownFrame
 end
