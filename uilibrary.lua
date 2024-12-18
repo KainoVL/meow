@@ -1,4 +1,4 @@
-print("You are on version 1.0.6")
+print("You are on version 1.0.7")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -152,6 +152,35 @@ function HyperionUI:GetSlider(tab, name)
         return tonumber(self.elements.sliders[tab][name].ValueLabel.Text)
     end
     return nil
+end
+
+local DropdownClass = {}
+DropdownClass.__index = DropdownClass
+
+function DropdownClass.new(frame, options, dropdownButton, optionButtons, createOptionButton, scrollFrame)
+    local self = setmetatable({}, DropdownClass)
+    self.frame = frame
+    self.options = options
+    self.dropdownButton = dropdownButton
+    self.optionButtons = optionButtons
+    self.createOptionButton = createOptionButton
+    self.scrollFrame = scrollFrame
+    return self
+end
+
+function DropdownClass:Refresh(newOptions, newDefault)
+    self.options = newOptions
+    self.dropdownButton.Text = newDefault or "Select..."
+    
+    for _, button in ipairs(self.optionButtons) do
+        button:Destroy()
+    end
+    self.optionButtons = {}
+    
+    for i, option in ipairs(self.options) do
+        self.optionButtons[i] = self.createOptionButton(option, i)
+    end
+    self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #self.options * 30)
 end
 
 function HyperionUI:_createTopBar()
@@ -829,7 +858,20 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     self.elements.dropdowns[tab][name] = dropdownFrame
     table.insert(tab.elements, dropdownFrame)
     
-    return dropdownFrame
+    local dropdownObject = DropdownClass.new(
+        dropdownFrame,
+        options,
+        dropdownButton,
+        optionButtons,
+        createOptionButton,
+        scrollFrame
+    )
+    
+    self.elements.dropdowns[tab] = self.elements.dropdowns[tab] or {}
+    self.elements.dropdowns[tab][name] = dropdownObject
+    table.insert(tab.elements, dropdownFrame)
+    
+    return dropdownObject
 end
 
 function HyperionUI:Toggle()
