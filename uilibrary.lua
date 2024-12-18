@@ -1,4 +1,4 @@
-print("You are on version 1.0.5")
+print("You are on version 1.0.6")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -84,6 +84,14 @@ end
 
 function HyperionUI.new(name)
     local self = setmetatable({}, HyperionUI)
+
+    self.elements = {
+        buttons = {},
+        textboxes = {},
+        dropdowns = {},
+        toggles = {},
+        sliders = {}
+    }
     
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = name .. "HyperionUI"
@@ -109,6 +117,41 @@ function HyperionUI.new(name)
     self:_createTabSystem()
     
     return self
+end
+
+function HyperionUI:GetButton(tab, name)
+    if self.elements.buttons[tab] and self.elements.buttons[tab][name] then
+        return self.elements.buttons[tab][name]
+    end
+    return nil
+end
+
+function HyperionUI:GetTextbox(tab, name)
+    if self.elements.textboxes[tab] and self.elements.textboxes[tab][name] then
+        return self.elements.textboxes[tab][name].Text
+    end
+    return nil
+end
+
+function HyperionUI:GetDropdown(tab, name)
+    if self.elements.dropdowns[tab] and self.elements.dropdowns[tab][name] then
+        return self.elements.dropdowns[tab][name]
+    end
+    return nil
+end
+
+function HyperionUI:GetToggle(tab, name)
+    if self.elements.toggles[tab] and self.elements.toggles[tab][name] then
+        return self.elements.toggles[tab][name].BackgroundColor3 == Color3.fromRGB(111, 167, 223)
+    end
+    return nil
+end
+
+function HyperionUI:GetSlider(tab, name)
+    if self.elements.sliders[tab] and self.elements.sliders[tab][name] then
+        return tonumber(self.elements.sliders[tab][name].ValueLabel.Text)
+    end
+    return nil
 end
 
 function HyperionUI:_createTopBar()
@@ -302,6 +345,8 @@ function HyperionUI:SwitchTab(tab)
 end
 
 function HyperionUI:CreateButton(tab, name, description, callback)
+    self.elements.buttons[tab] = self.elements.buttons[tab] or {}
+    
     local button = Instance.new("TextButton")
     button.Name = name .. "Button"
     button.Size = UDim2.new(1, -10, 0, 40)
@@ -327,12 +372,15 @@ function HyperionUI:CreateButton(tab, name, description, callback)
         callback()
     end)
     
+    self.elements.buttons[tab][name] = button
     table.insert(tab.elements, button)
     
     return button
 end
 
 function HyperionUI:CreateToggle(tab, name, description, defaultState, callback)
+    self.elements.toggles[tab] = self.elements.toggles[tab] or {}
+    
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = name .. "ToggleFrame"
     toggleFrame.Size = UDim2.new(1, -10, 0, 40)
@@ -376,12 +424,15 @@ function HyperionUI:CreateToggle(tab, name, description, defaultState, callback)
         callback(isToggled)
     end)
     
+    self.elements.toggles[tab][name] = toggleButton
     table.insert(tab.elements, toggleFrame)
     
     return toggleButton
 end
 
 function HyperionUI:CreateSlider(tab, name, description, min, max, default, callback)
+    self.elements.sliders[tab] = self.elements.sliders[tab] or {}
+    
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Name = name .. "SliderFrame"
     sliderFrame.Size = UDim2.new(1, -10, 0, 40)
@@ -475,12 +526,15 @@ function HyperionUI:CreateSlider(tab, name, description, min, max, default, call
         end
     end)
     
+    self.elements.sliders[tab][name] = sliderFrame
     table.insert(tab.elements, sliderFrame)
     
     return sliderFrame
 end
 
 function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
+    self.elements.textboxes[tab] = self.elements.textboxes[tab] or {}
+    
     local textboxFrame = Instance.new("Frame")
     textboxFrame.Name = name .. "TextboxFrame"
     textboxFrame.Size = UDim2.new(1, -10, 0, 40)
@@ -527,12 +581,15 @@ function HyperionUI:CreateTextbox(tab, name, description, placeholder, callback)
         end
     end)
     
+    self.elements.textboxes[tab][name] = textbox
     table.insert(tab.elements, textboxFrame)
     
     return textbox
 end
 
 function HyperionUI:CreateDropdown(tab, name, description, options, default, callback)
+    self.elements.dropdowns[tab] = self.elements.dropdowns[tab] or {}
+    
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Name = name .. "DropdownFrame"
     dropdownFrame.Size = UDim2.new(1, -10, 0, 40)
@@ -752,10 +809,25 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         end
     end)
     
+    function dropdownFrame:Refresh(newOptions, newDefault)
+        options = newOptions
+        dropdownButton.Text = newDefault or "Select..."
+        
+        for _, button in ipairs(optionButtons) do
+            button:Destroy()
+        end
+        optionButtons = {}
+        
+        for i, option in ipairs(options) do
+            optionButtons[i] = createOptionButton(option, i)
+        end
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
+    end
+    
     createHelpButton(dropdownFrame, description)
     
+    self.elements.dropdowns[tab][name] = dropdownFrame
     table.insert(tab.elements, dropdownFrame)
-    tab.updateCanvasSize()
     
     return dropdownFrame
 end
