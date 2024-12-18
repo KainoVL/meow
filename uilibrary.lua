@@ -1,4 +1,4 @@
-print("You are on version 1.0.7")
+print("You are on version 1.0.8")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
@@ -163,7 +163,7 @@ function DropdownClass.new(frame, options, dropdownButton, optionButtons, create
     self.options = options
     self.dropdownButton = dropdownButton
     self.optionButtons = optionButtons
-    self.createOptionButton = createOptionButton
+    self._createOptionButton = createOptionButton
     self.scrollFrame = scrollFrame
     return self
 end
@@ -178,7 +178,7 @@ function DropdownClass:Refresh(newOptions, newDefault)
     self.optionButtons = {}
     
     for i, option in ipairs(self.options) do
-        self.optionButtons[i] = self.createOptionButton(option, i)
+        self.optionButtons[i] = self._createOptionButton(option, i)
     end
     self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #self.options * 30)
 end
@@ -838,26 +838,6 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         end
     end)
     
-    function dropdownFrame:Refresh(newOptions, newDefault)
-        options = newOptions
-        dropdownButton.Text = newDefault or "Select..."
-        
-        for _, button in ipairs(optionButtons) do
-            button:Destroy()
-        end
-        optionButtons = {}
-        
-        for i, option in ipairs(options) do
-            optionButtons[i] = createOptionButton(option, i)
-        end
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
-    end
-    
-    createHelpButton(dropdownFrame, description)
-    
-    self.elements.dropdowns[tab][name] = dropdownFrame
-    table.insert(tab.elements, dropdownFrame)
-    
     local dropdownObject = DropdownClass.new(
         dropdownFrame,
         options,
@@ -867,9 +847,10 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         scrollFrame
     )
     
-    self.elements.dropdowns[tab] = self.elements.dropdowns[tab] or {}
     self.elements.dropdowns[tab][name] = dropdownObject
     table.insert(tab.elements, dropdownFrame)
+    
+    createHelpButton(dropdownFrame, description)
     
     return dropdownObject
 end
