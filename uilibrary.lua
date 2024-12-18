@@ -1,4 +1,4 @@
-print("You are on version 1.0.3")
+print("You are on version 1.0.4")
 local HyperionUI = {}
 HyperionUI.__index = HyperionUI
 
