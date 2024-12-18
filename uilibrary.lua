@@ -583,15 +583,21 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     arrow.TextSize = 14
     arrow.ZIndex = 3
     arrow.Parent = dropdownButton
+
+    local dropdownContainer = Instance.new("Frame")
+    dropdownContainer.Name = "DropdownContainer"
+    dropdownContainer.BackgroundTransparency = 1
+    dropdownContainer.Size = UDim2.new(1, 0, 0, 0)
+    dropdownContainer.Parent = self.screenGui
+    dropdownContainer.ZIndex = 100
     
     local dropdownList = Instance.new("Frame")
     dropdownList.Name = "DropdownList"
     dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 30 + 35, 235))
-    dropdownList.Position = UDim2.new(0, 0, 1, 5)
     dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     dropdownList.Visible = false
-    dropdownList.ZIndex = 20  
-    dropdownList.Parent = dropdownButton
+    dropdownList.ZIndex = 20
+    dropdownList.Parent = dropdownContainer
     createCorner(dropdownList, 5)
     
     local searchBox = Instance.new("TextBox")
@@ -632,7 +638,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
         optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         optionButton.Font = Enum.Font.Gotham
         optionButton.TextSize = 14
-        optionButton.ZIndex = 22  
+        optionButton.ZIndex = 22
         optionButton.Parent = scrollFrame
         
         optionButton.MouseEnter:Connect(function()
@@ -676,6 +682,26 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     end
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 30)
     
+    local function updateDropdownPosition()
+        local buttonAbsolutePosition = dropdownButton.AbsolutePosition
+        local buttonAbsoluteSize = dropdownButton.AbsoluteSize
+        local viewportHeight = workspace.CurrentCamera.ViewportSize.Y
+        
+        local spaceBelow = viewportHeight - (buttonAbsolutePosition.Y + buttonAbsoluteSize.Y)
+        local spaceAbove = buttonAbsolutePosition.Y
+        
+        dropdownContainer.Position = UDim2.new(0, buttonAbsolutePosition.X, 0, buttonAbsolutePosition.Y + buttonAbsoluteSize.Y)
+        
+        if spaceBelow < dropdownList.AbsoluteSize.Y and spaceAbove > spaceBelow then
+            dropdownContainer.Position = UDim2.new(
+                0, buttonAbsolutePosition.X,
+                0, buttonAbsolutePosition.Y - dropdownList.AbsoluteSize.Y
+            )
+        end
+        
+        dropdownList.Size = UDim2.new(0, buttonAbsoluteSize.X, 0, math.min(#options * 30 + 35, 235))
+    end
+    
     searchBox.Changed:Connect(function(prop)
         if prop == "Text" then
             filterOptions(searchBox.Text)
@@ -685,19 +711,24 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     dropdownButton.MouseButton1Click:Connect(function()
         dropdownList.Visible = not dropdownList.Visible
         arrow.Rotation = dropdownList.Visible and 180 or 0
+        
         if dropdownList.Visible then
+            updateDropdownPosition()
             searchBox.Text = ""
             filterOptions("")
             searchBox:CaptureFocus()
         end
     end)
     
+    tab.contentFrame:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+        if dropdownList.Visible then
+            updateDropdownPosition()
+        end
+    end)
+    
     game:GetService("UserInputService").InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-            local dropdownPos = dropdownButton.AbsolutePosition
-            local dropdownSize = dropdownButton.AbsoluteSize
-            local listSize = dropdownList.AbsoluteSize
             
             if dropdownList.Visible then
                 local listAbsPos = dropdownList.AbsolutePosition
@@ -706,7 +737,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
                                  mousePos.Y >= listAbsPos.Y and 
                                  mousePos.Y <= listAbsPos.Y + dropdownList.AbsoluteSize.Y
                 
-                if not inDropdown then
+                if not inDropdown and not dropdownButton.AbsoluteRect:IsPointInRect(mousePos) then
                     dropdownList.Visible = false
                     arrow.Rotation = 0
                 end
@@ -717,7 +748,7 @@ function HyperionUI:CreateDropdown(tab, name, description, options, default, cal
     createHelpButton(dropdownFrame, description)
     
     table.insert(tab.elements, dropdownFrame)
-    tab.updateCanvasSize()  
+    tab.updateCanvasSize()
     
     return dropdownFrame
 end
